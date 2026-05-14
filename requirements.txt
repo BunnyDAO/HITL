@@ -2,3 +2,4 @@
 # separately: `brew install randlee/tap/sc-compose` (see README.md).
 numpy>=1.26,<3
 pytest>=8,<9
+pyyaml>=6,<7   # used by tests/test_skill_doc.py to parse template frontmatter

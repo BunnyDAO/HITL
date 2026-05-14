@@ -10,6 +10,7 @@ requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.26,<3",
     "pytest>=8,<9",
+    "pyyaml>=6,<7",
 ]
 
 [tool.setuptools.packages.find]
@@ -20,4 +21,7 @@ hitl_fixtures = "hitl_lib.fixtures"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+# Ignore tests/generated/ — it's demo output (rendered by /hitl-test or
+# `make demo`), not part of the repo's own test suite. The Makefile's
+# `demo` target runs pytest against it explicitly when needed.
+addopts = "-ra --ignore=tests/generated"
