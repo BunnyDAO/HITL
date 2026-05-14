@@ -1,0 +1,7 @@
+---
+required_variables:
+  - intensity_threshold
+metadata:
+  purpose: "Assert pixel intensity above threshold — one hitl_assert.pixel_intensity_above call. Sanity check that the display actually rendered something the camera can see. Must come after pattern_capture (uses the `image` variable it binds)."
+---
+    hitl_assert.pixel_intensity_above(image, threshold={{ intensity_threshold }})

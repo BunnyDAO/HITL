@@ -37,6 +37,11 @@ PRIMITIVES: list[tuple[str, dict, str]] = [
         {"target_x": 100, "target_y": 100, "tolerance_px": 5},
         "hitl_assert.centroid_within(image, target=(100, 100), tolerance_px=5)",
     ),
+    (
+        "assert_intensity",
+        {"intensity_threshold": 100},
+        "hitl_assert.pixel_intensity_above(image, threshold=100)",
+    ),
 ]
 
 

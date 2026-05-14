@@ -3,10 +3,10 @@ required_variables:
   - test_name
 defaults:
   display_pattern: smoke
+  intensity_threshold: 0
 metadata:
-  purpose: "Smoke test — minimal 'device alive' check that the fixture wiring works. Composes from the primitives kit (setup_preamble) plus an inline assertion."
+  purpose: "Smoke test — minimal 'device alive' check that the fixture wiring works. Composes from the kit: setup_preamble + pattern_capture + assert_intensity."
 ---
 @<primitives/setup_preamble.j2>
-    display.show("{{ display_pattern }}")
-    image = camera.capture()
-    hitl_assert.pixel_intensity_above(image, threshold=0)
+@<primitives/pattern_capture.j2>
+@<primitives/assert_intensity.j2>

@@ -8,16 +8,10 @@ defaults:
   capture_delay_ms: 500
   retries: 3
 metadata:
-  purpose: "Vision multi-assertion test — show pattern, capture, then run a sequence of assertion calls on the captured image (demonstrates Jinja {% for %} loops with parallel scalar arrays)"
+  purpose: "Vision multi-assertion test — show pattern, capture, then run a sequence of assertion calls on the captured image. Composes setup_preamble + pattern_capture from the kit; the {% for %} loop body emits the same hitl_assert.<kind>(image, <kwargs>) call shape one per item."
 ---
-import pytest
-from hitl_lib import assertions as hitl_assert
-from hitl_lib import camera, display
-
-
-def test_{{ test_name }}(hitl_fixture):
-    display.show("{{ display_pattern }}")
-    image = camera.capture(delay_ms={{ capture_delay_ms }}, retries={{ retries }})
+@<primitives/setup_preamble.j2>
+@<primitives/pattern_capture.j2>
 {% for kind in assertion_kinds %}
     hitl_assert.{{ kind }}(image, {{ assertion_kwargs[loop.index0] }})
 {% endfor %}
