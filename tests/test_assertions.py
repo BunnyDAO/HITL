@@ -72,3 +72,21 @@ def test_assertion_message_includes_observed_centroid():
     # "it failed". A test engineer reading the failure needs both numbers.
     msg = str(exc.value)
     assert "100" in msg and "110" in msg, f"diagnostic must mention observed centroid; got: {msg}"
+
+
+def test_pixel_intensity_above_passes_when_max_exceeds_threshold():
+    img = _single_pixel_image(100, 100)  # one pixel at 255
+    assertions.pixel_intensity_above(img, threshold=200)
+
+
+def test_pixel_intensity_above_fails_when_max_below_threshold():
+    img = np.full((200, 200), 50, dtype=np.uint8)
+    with pytest.raises(AssertionError, match="intensity"):
+        assertions.pixel_intensity_above(img, threshold=100)
+
+
+def test_pixel_intensity_above_message_includes_observed_max():
+    img = np.full((200, 200), 73, dtype=np.uint8)
+    with pytest.raises(AssertionError) as exc:
+        assertions.pixel_intensity_above(img, threshold=200)
+    assert "73" in str(exc.value) and "200" in str(exc.value)

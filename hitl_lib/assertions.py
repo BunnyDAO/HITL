@@ -43,3 +43,19 @@ def centroid_within(
             f"centroid ({cx:.2f}, {cy:.2f}) is {distance:.2f}px from "
             f"target ({tx}, {ty}); tolerance was {tolerance_px}px"
         )
+
+
+def pixel_intensity_above(image: np.ndarray, threshold: float) -> None:
+    """Assert that at least one pixel in `image` has intensity greater than
+    `threshold`. Useful as a sanity check that the display actually rendered
+    something visible to the camera."""
+    if not isinstance(image, np.ndarray):
+        raise AssertionError(
+            f"expected numpy.ndarray, got {type(image).__name__}"
+        )
+    observed_max = float(image.max())
+    if observed_max <= threshold:
+        raise AssertionError(
+            f"max pixel intensity was {observed_max:.0f}; "
+            f"expected something above {threshold}"
+        )

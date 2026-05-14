@@ -11,35 +11,43 @@ import yaml
 
 REPO_ROOT = Path(__file__).parent.parent
 SKILL_FILE = REPO_ROOT / ".claude" / "skills" / "hitl-test" / "SKILL.md"
-TEMPLATE_FILE = REPO_ROOT / "templates" / "vision-centroid.py.j2"
+TEMPLATES_DIR = REPO_ROOT / "templates"
 
 
-def _template_required_variables() -> list[str]:
-    body = TEMPLATE_FILE.read_text()
-    assert body.startswith("---\n"), "template must have YAML frontmatter"
+def _required_variables(template_path: Path) -> list[str]:
+    body = template_path.read_text()
+    assert body.startswith("---\n"), f"{template_path} must have YAML frontmatter"
     end = body.index("\n---\n", 4)
     frontmatter = yaml.safe_load(body[4:end])
-    return frontmatter["required_variables"]
+    return frontmatter.get("required_variables", [])
+
+
+def _all_templates() -> list[Path]:
+    # Excludes underscore-prefixed include fragments.
+    return sorted(p for p in TEMPLATES_DIR.glob("*.py.j2") if not p.name.startswith("_"))
 
 
 def test_skill_doc_exists():
     assert SKILL_FILE.exists(), f"missing skill doc: {SKILL_FILE}"
 
 
-def test_skill_doc_mentions_every_required_template_variable():
+def test_skill_doc_mentions_every_required_variable_across_all_templates():
     doc = SKILL_FILE.read_text()
-    for var in _template_required_variables():
-        assert var in doc, (
-            f"required template variable {var!r} not mentioned in SKILL.md — "
-            "the skill will not collect it from the engineer"
-        )
+    for template in _all_templates():
+        for var in _required_variables(template):
+            assert var in doc, (
+                f"required variable {var!r} from {template.name} not mentioned "
+                f"in SKILL.md — the skill will not collect it from the engineer"
+            )
 
 
-def test_skill_doc_references_the_correct_template_path():
+def test_skill_doc_does_not_hardcode_one_template_path():
+    # v0 referenced `templates/vision-centroid.py.j2` literally. After slice
+    # 0004, the skill discovers templates dynamically and should reference
+    # them by stem only.
     doc = SKILL_FILE.read_text()
-    assert "templates/vision-centroid.py.j2" in doc, (
-        "SKILL.md must reference the exact template path so its render "
-        "subprocess works from the repo root"
+    assert "templates/<template-stem>.py.j2" in doc or "templates/*.py.j2" in doc, (
+        "SKILL.md should describe template discovery, not hardcode a single template path"
     )
 
 

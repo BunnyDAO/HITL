@@ -1,106 +1,92 @@
 # /hitl-test — interrogate the engineer, render a HITL test
 
-A Claude Code skill that walks an engineer through generating a vision-centroid
-HITL test, without them ever writing Python. This is the v0 — hardcoded to
-the single `vision-centroid` template. Multi-template support is a follow-up.
+A Claude Code skill that walks an engineer through generating a HITL test
+from one of the templates in `templates/`. The engineer never writes Python.
 
 ## What this skill does
 
-1. Asks the engineer five structured questions, one variable at a time, using
-   `AskUserQuestion` (each with sensible options plus an "Other" free-text
-   path).
-2. Renders the answers through `sc-compose render` as a subprocess.
-3. If render fails, surfaces sc-compose's stderr verbatim — the engineer sees
+1. Discovers available templates in `templates/*.py.j2` and asks which one to use.
+2. Reads the chosen template's YAML frontmatter, then asks one structured
+   `AskUserQuestion` per `required_variables` entry (with sensible options
+   plus the implicit "Other" free-text path).
+3. Renders the answers through `sc-compose render` as a subprocess.
+4. If render fails, surfaces sc-compose's stderr verbatim — the engineer sees
    the contract violation directly, not a paraphrase.
-4. Writes the result to `tests/generated/test_<test_name>.py`.
-5. Offers to run pytest on the generated file and reports the outcome.
+5. Writes the result to `tests/generated/test_<test_name>.py`.
+6. Offers to run pytest on the generated file and reports the outcome.
 
 It does not validate variables itself. The single source of truth on what
 counts as a valid set of inputs is sc-compose's frontmatter contract.
 
-## Entry
+## Entry preflight
 
-Before doing anything else, confirm the prerequisites are in place. Run:
+Before doing anything else, run:
 
 ```bash
-command -v sc-compose && test -f templates/vision-centroid.py.j2 && \
-  test -d .venv && echo "ready"
+command -v sc-compose && test -d templates && test -d .venv && echo "ready"
 ```
 
-If that prints `ready`, proceed. If not, stop and tell the engineer:
+If that prints `ready`, proceed. Otherwise stop and tell the engineer:
 
-> "I can't run /hitl-test from here — sc-compose, the template, or the
-> Python venv is missing. Open the repo root (where `Makefile` lives) and
-> run `make demo` once to confirm the toolchain is wired up, then try
-> again."
+> "I can't run /hitl-test from here — sc-compose, the templates dir, or
+> the Python venv is missing. Open the repo root (where `Makefile` lives)
+> and run `make demo` once to confirm the toolchain is wired up."
 
-## Step 1 — collect the five required variables
+## Step 1 — discover templates and pick one
 
-Ask these five `AskUserQuestion` calls IN ORDER. Do not batch them — one
-question, wait for answer, next question. The engineer's answers feed
-directly into the sc-compose var file.
+List all `templates/*.py.j2` files. For each one, read the YAML frontmatter
+(everything between the first `---` and the next `---`) and extract:
 
-### Q1 — test_name
+- the filename stem (e.g. `vision-centroid`)
+- `metadata.purpose` — the one-line description
 
-> "What should we call this test? It becomes the function name, so use snake_case."
+Present them via `AskUserQuestion`. Each option's `label` is the stem; the
+`description` is the `metadata.purpose` value.
 
-Options:
-- `grid_centroid_alignment` (Recommended) — descriptive default
-- `centroid_within_tolerance`
-- `quick_smoke`
+The first template in alphabetical order is the Recommended option.
 
-The "Other" path lets them type anything; coerce to snake_case if it isn't
-already (lowercase, spaces→underscores, strip non-alphanumeric-underscore).
+## Step 2 — walk the variables
 
-### Q2 — display_pattern
+Open the chosen template's frontmatter. For each name in `required_variables`,
+ask one structured `AskUserQuestion`.
 
-> "Which pattern should the display show before capture?"
+**Scalar variables** (everything not obviously a list): one question, options
+should include sensible defaults for the variable's apparent type, plus the
+implicit "Other" path. Coerce numeric answers to int when feeding sc-compose.
 
-Options:
-- `dot_grid` (Recommended) — the demo's default; lands ~3px off (100, 100)
-- `checkerboard` — lands ~1.4px off
-- `single_dot` — lands ~4.2px off (use to demonstrate a tight tolerance failing)
-- `horizontal_lines` — lands ~2.2px off
+**Parallel-list variables** (you see two or more list-typed required vars
+that obviously go together, like `assertion_kinds` + `assertion_kwargs`):
+treat them as a single "configure N items" loop. Per iteration:
 
-### Q3 — target_x
+1. Ask one question per list (e.g. "what kind of assertion?" then "what kwargs
+   for that assertion?"). The kwargs answer is a free-text Python kwargs
+   fragment like `target=(100, 100), tolerance_px=5`.
+2. After the iteration, ask `AskUserQuestion`: "add another?" with options
+   `Yes — add another` and `No — done`.
 
-> "What x-coordinate should the centroid land at? (Image is 200×200, centered at 100.)"
+When done, build each list in order. Both lists must end up the same length.
 
-Options:
-- `100` (Recommended) — image center
-- `50`
-- `150`
+**Singleton list variables**: same shape but only one entry is collected.
 
-### Q4 — target_y
+### Variable defaults for known templates
 
-> "What y-coordinate should the centroid land at?"
+These hints help you offer the right Recommended option, but the engineer can
+always pick "Other" and type anything:
 
-Options:
-- `100` (Recommended) — image center
-- `50`
-- `150`
+- `test_name` — snake_case the answer
+- `display_pattern` — `dot_grid` (default), `checkerboard`, `single_dot`, `horizontal_lines`
+- `target_x`, `target_y` — `100` (image center; image is 200×200)
+- `tolerance_px` — `5` (passes with default `dot_grid` jitter); `1` to demonstrate failure
+- `assertion_kinds` — `centroid_within`, `pixel_intensity_above`
+- `assertion_kwargs` — e.g. `target=(100, 100), tolerance_px=5`, `threshold=100`
 
-### Q5 — tolerance_px
+## Step 3 — render
 
-> "How many pixels can the centroid be off before the test fails?"
-
-Options:
-- `5` (Recommended) — passes with the default `dot_grid` jitter (~3px)
-- `2` — tight; will fail for `dot_grid` and `single_dot`
-- `1` — very tight; fails for every pattern
-- `10` — loose; passes everything
-
-## Step 2 — render
-
-Write the five answers to a temp JSON file (use `tempfile.NamedTemporaryFile`
-or equivalent). Coerce numeric answers (`target_x`, `target_y`, `tolerance_px`)
-to integers; leave string answers as strings.
-
-Run:
+Write the answers to a temp JSON file. Run:
 
 ```bash
 sc-compose render --mode file \
-  --file templates/vision-centroid.py.j2 \
+  --file templates/<template-stem>.py.j2 \
   --var-file <tmp.json> \
   --output tests/generated/test_<test_name>.py
 ```
@@ -119,10 +105,9 @@ If exit code is zero, tell the engineer:
 
 > "Rendered tests/generated/test_<test_name>.py."
 
-And read the rendered file so they can see what was produced (or `cat` it
-into the conversation).
+Then show them the rendered file so they can see what was produced.
 
-## Step 3 — offer to run pytest
+## Step 4 — offer to run pytest
 
 Ask one final `AskUserQuestion`:
 
@@ -130,7 +115,7 @@ Ask one final `AskUserQuestion`:
 
 Options:
 - `Yes — run it` (Recommended)
-- `No — I'll run it myself later`
+- `No — I'll run it later`
 
 If yes, run:
 
@@ -139,9 +124,9 @@ If yes, run:
 ```
 
 Show the engineer the output verbatim — including the failure diagnostic
-from `assertions.centroid_within` if the centroid was outside tolerance.
-The point of this skill is that the engineer sees the real outcome, not
-a curated summary.
+from `assertions.centroid_within` (or whatever assertion failed) if the test
+didn't pass. The point of this skill is that the engineer sees the real
+outcome, not a curated summary.
 
 If no, exit with:
 
@@ -150,7 +135,6 @@ If no, exit with:
 
 ## What this skill is NOT for
 
-- **Multi-template selection** — slice 0004 adds that. For now, vision-centroid only.
 - **Authoring new templates** — that's a different workflow. This skill only consumes templates.
 - **Real hardware** — the fixture library is mocked. There is no production-hardware story in this repo.
 
@@ -160,7 +144,7 @@ Push back gently. The reason this skill exists is to enforce the contract
 that sc-compose templates declare. A test engineer who can describe what they
 want in five answers is closer to a test that runs in CI than a test engineer
 who hand-writes Python the agent will then have to interpret. Walk them
-through the five questions.
+through the questions.
 
 If they're stuck on a value, suggest the Recommended default and tell them
 they can re-run the skill with a different choice — `/hitl-test` is fast

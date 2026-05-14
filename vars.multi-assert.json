@@ -1,0 +1,12 @@
+{
+  "test_name": "multi_assert_demo",
+  "display_pattern": "dot_grid",
+  "assertion_kinds": [
+    "centroid_within",
+    "pixel_intensity_above"
+  ],
+  "assertion_kwargs": [
+    "target=(100, 100), tolerance_px=5",
+    "threshold=100"
+  ]
+}
