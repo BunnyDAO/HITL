@@ -4,9 +4,11 @@ A teaching repo that demonstrates how four moving parts — a mock fixture libra
 
 ## Pick your path
 
-- **You write code** (developer, dev lead, maintainer) → **[`docs/sop.md`](docs/sop.md)** — the architecture doc. ~20 minutes.
-- **You don't write code** (test engineer, QA, anyone using `/hitl-test` or `/hitl-author`) → **[`docs/test-engineer-guide.md`](docs/test-engineer-guide.md)** — the user manual. ~10 minutes.
-- **You're presenting this to a team** → **[`docs/deck.md`](docs/deck.md)** — Marp slide deck, ~10 minutes to present.
+The full story lives in **[`docs/sop.md`](docs/sop.md)** — one doc, ordered so each audience can stop where they need to.
+
+- **Test engineers / non-programmers** → read [What this project does](docs/sop.md#what-this-project-does) through [Reading test results](docs/sop.md#reading-test-results). ~10 minutes; no Python required.
+- **Developers / maintainers** → continue past that into [How it works](docs/sop.md#how-it-works--the-three-layers) for the architecture, mermaid diagrams, and the manual walkthrough checklist. ~20 minutes total.
+- **Presenters** → **[`docs/deck.md`](docs/deck.md)** is the Marp slide deck for a 10-minute team pitch.
 
 ## Getting started
 
@@ -31,7 +33,7 @@ make demo-authored   # engineer-authored example template
 make test
 ```
 
-To use the agentic flows: open this directory in Claude Code, start a fresh session, and type `/hitl-test` or `/hitl-author`. See [`docs/test-engineer-guide.md`](docs/test-engineer-guide.md) for what each skill does.
+To use the agentic flows: open this directory in Claude Code, start a fresh session, and type `/hitl-test` or `/hitl-author`. See [Using `/hitl-test`](docs/sop.md#using-hitl-test--render-an-existing-test) and [Using `/hitl-author`](docs/sop.md#using-hitl-author--design-a-new-test) in the SOP for what each skill does.
 
 ## Repo layout
 
@@ -55,9 +57,8 @@ templates/
   hitl-author/SKILL.md        Skill: author a new template from primitives
 
 docs/
-  sop.md                      Developer/architecture doc.
-  test-engineer-guide.md      Non-programmer user manual.
-  deck.md                     Marp slide deck.
+  sop.md                      The single reference doc — both audience paths.
+  deck.md                     Marp slide deck for presentations.
   prd/                        Design history (PRDs).
 
 issues/                      Implementation history (vertical slices 0001..0015)
