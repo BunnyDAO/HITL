@@ -2,7 +2,7 @@
 id: 0014
 title: /hitl-author skill v0 (incl. no-fit case → issues/primitive-requests/)
 type: HITL
-status: open
+status: done
 blocked_by: [0013]
 parent: docs/prd/primitives-kit-and-hitl-author.md
 ---
@@ -27,16 +27,17 @@ A lint test guards drift between SKILL.md and the primitives kit, parallel to `t
 
 ## Acceptance criteria
 
-- [ ] `.claude/skills/hitl-author/SKILL.md` exists, readable end-to-end in under 5 minutes (lint enforced under 1200 words)
-- [ ] SKILL.md instructs the agent on the 7-step flow described above
-- [ ] SKILL.md mentions every primitive in the kit by stem (lint-enforced)
-- [ ] SKILL.md describes the authoring-trail comment block format and the conventional primitive ordering
-- [ ] SKILL.md describes the no-fit case and the `issues/primitive-requests/` write
-- [ ] A new template authored end-to-end by simulating `/hitl-author` lands in `templates/`, is discoverable by `/hitl-test`, and renders+passes via existing flow
-- [ ] An engineer-authored template's authoring-trail comment block survives sc-compose rendering (the comment block appears at the top of the rendered Python output)
-- [ ] `tests/test_hitl_author_doc.py` exists with parallel structure to `tests/test_skill_doc.py` — asserts SKILL.md mentions each primitive, references the `issues/primitive-requests/` path, instructs `AskUserQuestion`, and stays under the read budget
-- [ ] Full test suite passes (now ~35 tests)
-- [ ] No regression: `/hitl-test` flow continues to work for the three existing templates plus any engineer-authored template
+- [x] `.claude/skills/hitl-author/SKILL.md` exists, under the 1200-word read budget (lint enforced)
+- [x] SKILL.md instructs the 7-step flow (preflight → name → intent → pick primitives → walk variables → author → optional render)
+- [x] SKILL.md mentions every primitive in the kit by stem (lint enforced — drift-protected)
+- [x] SKILL.md describes the authoring-trail comment block format and the conventional setup → capture → assertions ordering
+- [x] SKILL.md describes the no-fit case and the `issues/primitive-requests/` write
+- [x] Engineer-authored template landed end-to-end: `templates/centroid-with-intensity.py.j2` simulates `/hitl-author`'s output with the full authoring-trail comment block, composes 4 primitives, ships `vars.centroid-with-intensity.json`, runs via `make demo-authored`, and is discoverable by `/hitl-test`'s dynamic template-listing
+- [x] Authoring-trail comment block survives sc-compose rendering (visible at the top of the rendered Python — confirmed by inspecting `tests/generated/test_authored.py`)
+- [x] `tests/test_hitl_author_doc.py` exists with 8 lint tests parallel to `test_skill_doc.py` — covers primitive mentions, request-path mention, AskUserQuestion, conventional order, authoring-trail format, word budget, and cross-reference to `/hitl-test`'s SKILL.md for shared variable-walking spec
+- [x] **Drift surfaced + fixed**: the engineer-authored template introduced `intensity_threshold` as a required variable; the existing `test_skill_doc.py` lint caught that `/hitl-test`'s SKILL.md didn't mention it. Added a hint line; lint passes
+- [x] Full test suite passes (45 tests + 4 documented skips)
+- [x] No regression: `/hitl-test` flow continues to render all four top-level templates (3 original + 1 engineer-authored)
 
 ## Blocked by
 

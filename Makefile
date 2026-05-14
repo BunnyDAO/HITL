@@ -19,7 +19,7 @@ demo-multi:
 		--output tests/generated/test_multi.py
 	.venv/bin/pytest tests/generated/test_multi.py -v
 
-# Render the smoke-test template (demonstrates @<path> include of _shared_setup.j2).
+# Render the smoke-test template (demonstrates @<path> include of setup_preamble + assert_intensity primitives).
 demo-smoke:
 	mkdir -p tests/generated
 	sc-compose render --mode file \
@@ -27,6 +27,15 @@ demo-smoke:
 		--var-file vars.smoke.json \
 		--output tests/generated/test_smoke.py
 	.venv/bin/pytest tests/generated/test_smoke.py -v
+
+# Render the engineer-authored example template (demonstrates /hitl-author output).
+demo-authored:
+	mkdir -p tests/generated
+	sc-compose render --mode file \
+		--file templates/centroid-with-intensity.py.j2 \
+		--var-file vars.centroid-with-intensity.json \
+		--output tests/generated/test_authored.py
+	.venv/bin/pytest tests/generated/test_authored.py -v
 
 # Wipe generated tests.
 clean:

@@ -1,0 +1,24 @@
+---
+required_variables:
+  - test_name
+  - display_pattern
+  - target_x
+  - target_y
+  - tolerance_px
+  - intensity_threshold
+defaults:
+  capture_delay_ms: 500
+  retries: 3
+metadata:
+  purpose: "Engineer-authored example — centroid alignment plus a pixel-intensity sanity check on the same capture. Demonstrates the /hitl-author output shape."
+---
+# ────────────────────────────────────────────────────────────────────
+# Authored via /hitl-author on 2026-05-13 by rabeaty88@gmail.com
+# Intent: Centroid alignment + intensity sanity check on the same capture
+# Primitives: setup_preamble → pattern_capture → assert_centroid → assert_intensity
+# Review: PR before merging into templates/
+# ────────────────────────────────────────────────────────────────────
+@<primitives/setup_preamble.j2>
+@<primitives/pattern_capture.j2>
+@<primitives/assert_centroid.j2>
+@<primitives/assert_intensity.j2>

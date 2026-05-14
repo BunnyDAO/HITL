@@ -81,6 +81,7 @@ always pick "Other" and type anything:
 - `tolerance_px` — `5` (passes with default `dot_grid` jitter); `1` to demonstrate failure
 - `assertion_kinds` — `centroid_within`, `pixel_intensity_above`
 - `assertion_kwargs` — e.g. `target=(100, 100), tolerance_px=5`, `threshold=100`
+- `intensity_threshold` — `100` (typical sanity check that the display rendered something visible)
 
 ## Step 3 — render
 

@@ -20,6 +20,8 @@ COMPOSED_TEMPLATES: list[tuple[str, str]] = [
     ("templates/vision-centroid.py.j2", "vars.example.json"),
     ("templates/vision-multi-assert.py.j2", "vars.multi-assert.json"),
     ("templates/smoke-test.py.j2", "vars.smoke.json"),
+    # Engineer-authored example, produced by simulating /hitl-author end-to-end.
+    ("templates/centroid-with-intensity.py.j2", "vars.centroid-with-intensity.json"),
 ]
 
 
