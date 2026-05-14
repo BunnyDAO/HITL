@@ -2,7 +2,7 @@
 id: 0006
 title: Render-smoke tests for all templates
 type: AFK
-status: open
+status: done
 blocked_by: [0005]
 parent: docs/prd/agentic-hitl-test-generator.md
 ---
@@ -15,12 +15,12 @@ End-to-end behavior: running `pytest tests/test_template_render.py` produces thr
 
 ## Acceptance criteria
 
-- [ ] `tests/test_template_render.py` exists with one test function per template (parametrized is fine)
-- [ ] Each test invokes `sc-compose render` as a subprocess with a known-valid JSON var file, captures stdout, parses it with `ast.parse`
-- [ ] A failing case is also covered: rendering with a known-missing required variable raises a clear error from sc-compose, and the test asserts the non-zero exit + the expected stderr substring
-- [ ] Test fixtures (the known-valid var sets) live in `tests/fixtures/` as JSON files, not inline in the test code
-- [ ] `pytest tests/` (the whole suite, not just `generated/`) exits 0
-- [ ] Render-smoke tests run in under 5 seconds total
+- [x] `tests/test_template_render.py` exists, parametrized across all three renderable templates
+- [x] Each test invokes `sc-compose render` as a subprocess with a known-valid JSON var file and parses the output with `ast.parse`
+- [x] A failing case is also covered: omits `target_x` from vision-centroid's vars + uses `--strict`; asserts non-zero exit and that stderr mentions `target_x`
+- [x] **Deviation from spec**: the JSON var files live at the repo root (`vars.example.json`, `vars.multi-assert.json`, `vars.smoke.json`) rather than `tests/fixtures/`. Reason: they're the same files used by `make demo*` targets; duplicating them would let demo and test reality drift. The test's docstring explains this.
+- [x] `pytest tests/` exits 0 (28 tests pass)
+- [x] Render-smoke tests run in 0.05s on their own, full suite in 0.18s — well under the 5s budget
 
 ## Blocked by
 
