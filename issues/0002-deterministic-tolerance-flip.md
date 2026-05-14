@@ -2,7 +2,7 @@
 id: 0002
 title: Deterministic pass/fail by tolerance_px — the demo's central beat
 type: AFK
-status: open
+status: done
 blocked_by: [0001]
 parent: docs/prd/agentic-hitl-test-generator.md
 ---
@@ -17,13 +17,14 @@ This slice replaces slice 1's stubs with real numpy-backed implementations. The 
 
 ## Acceptance criteria
 
-- [ ] `hitl_lib.camera.capture()` returns a numpy 2D grayscale array with a synthetic dot pattern derived from `display.current()`
-- [ ] Camera jitter is seeded PRNG-driven (deterministic across runs) with magnitude ~3 pixels
-- [ ] `hitl_lib.assertions.centroid_within()` computes the real image-moments centroid (e.g. via scipy.ndimage or numpy directly) and raises `AssertionError` with an informative message
-- [ ] `hitl_lib.display.show()`/`current()` track the current pattern in module-level state; fixture resets state between tests
-- [ ] `tests/test_assertions.py` unit-tests `centroid_within` against known synthetic arrays — covers the pass case, the fail case, and an edge case at exactly the tolerance boundary
-- [ ] Demonstrated manually: rendering with `tolerance_px=5` produces a passing test, `tolerance_px=1` produces a failing test, every time
-- [ ] PRNG seed is documented in the camera module so future maintainers can reproduce
+- [x] `hitl_lib.camera.capture()` returns a numpy 2D grayscale array with a synthetic dot pattern derived from `display.current()`
+- [x] Camera jitter is seeded PRNG-driven (deterministic across runs) with magnitude ~3 pixels (md5-derived seed → `np.random.default_rng`, sigma=3.0)
+- [x] `hitl_lib.assertions.centroid_within()` computes the real image-moments centroid (numpy directly via `np.indices`) and raises `AssertionError` with the observed centroid, distance, and tolerance in the message
+- [x] `hitl_lib.display.show()`/`current()` track the current pattern in module-level state; fixture resets state between tests (from #0001)
+- [x] `tests/test_assertions.py` unit-tests `centroid_within` against known synthetic arrays (9 cases: zero distance, pass-within-tolerance, fail-outside-tolerance, exactly-at-boundary, just-outside, multi-pixel centroid, blank image, non-array, message format)
+- [x] `tests/test_camera.py` unit-tests the camera (determinism, shape, expected offset range, pattern-keyed seed, error when display not set)
+- [x] Demonstrated manually: `vars.example.json` (tolerance_px=5) renders to a PASSING test; `vars.tight.json` (tolerance_px=1) renders to a FAILING test with message `centroid (97.00, 101.00) is 3.16px from target (100, 100); tolerance was 1px`
+- [x] PRNG seed scheme (md5(pattern_name)[:4]) and sigma=3.0 are documented in `hitl_lib/camera.py` module docstring
 
 ## Blocked by
 
