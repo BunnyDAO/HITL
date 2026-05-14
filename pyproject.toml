@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hitl-example"
+version = "0.0.1"
+description = "Teaching example: sc-compose + Claude Code skill + mock HITL fixture library"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26,<3",
+    "pytest>=8,<9",
+]
+
+[tool.setuptools.packages.find]
+include = ["hitl_lib*"]
+
+[project.entry-points.pytest11]
+hitl_fixtures = "hitl_lib.fixtures"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,4 @@
+# Runtime + dev Python deps. sc-compose itself is a Rust CLI installed
+# separately: `brew install randlee/tap/sc-compose` (see README.md).
+numpy>=1.26,<3
+pytest>=8,<9

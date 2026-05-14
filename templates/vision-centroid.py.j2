@@ -1,0 +1,25 @@
+---
+required_variables:
+  - test_name
+  - display_pattern
+  - target_x
+  - target_y
+  - tolerance_px
+defaults:
+  capture_delay_ms: 500
+  retries: 3
+metadata:
+  purpose: "Vision centroid alignment test — show a pattern, capture an image, assert the centroid lands within tolerance of a target pixel"
+---
+import pytest
+from hitl_lib import assertions, camera, display
+
+
+def test_{{ test_name }}(hitl_fixture):
+    display.show("{{ display_pattern }}")
+    image = camera.capture(delay_ms={{ capture_delay_ms }}, retries={{ retries }})
+    assertions.centroid_within(
+        image,
+        target=({{ target_x }}, {{ target_y }}),
+        tolerance_px={{ tolerance_px }},
+    )
