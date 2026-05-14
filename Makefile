@@ -19,6 +19,15 @@ demo-multi:
 		--output tests/generated/test_multi.py
 	.venv/bin/pytest tests/generated/test_multi.py -v
 
+# Render the smoke-test template (demonstrates @<path> include of _shared_setup.j2).
+demo-smoke:
+	mkdir -p tests/generated
+	sc-compose render --mode file \
+		--file templates/smoke-test.py.j2 \
+		--var-file vars.smoke.json \
+		--output tests/generated/test_smoke.py
+	.venv/bin/pytest tests/generated/test_smoke.py -v
+
 # Wipe generated tests.
 clean:
 	rm -rf tests/generated/

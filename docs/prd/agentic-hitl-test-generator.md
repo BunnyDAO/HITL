@@ -84,6 +84,10 @@ sc-compose render --mode file --file templates/vision-centroid.py.j2 \
 
 `--mode profile` exists for agent/skill/command profiles resolved through runtime search chains; we don't use it.
 
+**Include directive syntax (verified from sc-compose source `crates/sc-composer/src/include.rs`):** the literal form is `@<path>` *with angle brackets*. The README's prose example `@_includes/house-style.md` reads like documentation prose but the parser checks `trimmed.starts_with("@<") && trimmed.ends_with('>')`. So `@<_shared_setup.j2>` works; bare `@_shared_setup.j2` is treated as literal text and emitted verbatim. Path resolution: relative-to-including-file first, then relative-to-workspace-root.
+
+**Var-file value shapes (verified empirically):** sc-compose 1.0.1's var-file accepts only scalars or arrays of scalars — nested objects raise `ERR_CONFIG_VARFILE`. Lists of structured items must be flattened into parallel scalar arrays (see `vars.multi-assert.json`).
+
 ### Layout
 
 ```

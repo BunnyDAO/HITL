@@ -2,7 +2,7 @@
 id: 0005
 title: Smoke-test template + @<path> include fragment
 type: AFK
-status: open
+status: done
 blocked_by: [0004]
 parent: docs/prd/agentic-hitl-test-generator.md
 ---
@@ -17,12 +17,13 @@ The point of this template is the include, not the test logic. The test itself c
 
 ## Acceptance criteria
 
-- [ ] `templates/_shared_setup.j2` exists, ~10 lines max, contains imports + fixture parameter declaration
-- [ ] `templates/smoke-test.py.j2` exists, declares `test_name` as the only required variable, and uses sc-compose's `@<path>` syntax to include `_shared_setup.j2`
-- [ ] Rendering `smoke-test` produces a valid Python test file with the fragment's content inlined where the `@<path>` reference appeared
-- [ ] The generated test passes when run via pytest
-- [ ] Skill's template picker lists all three templates; each with its `metadata.purpose` shown
-- [ ] No regression: vision-centroid and vision-multi-assert still render and pass
+- [x] `templates/_shared_setup.j2` exists, 3 lines, contains the imports any HITL test needs (`pytest`, `assertions as hitl_assert`, `camera`, `display`). **Note**: original spec said "imports + fixture parameter declaration", but the test function signature varies per test (different `test_name`s) so it can't live in the shared fragment; the `hitl_fixture` parameter is declared in the using-template's `def` line instead.
+- [x] `templates/smoke-test.py.j2` exists, declares `test_name` as the only required variable, and uses sc-compose's `@<path>` syntax to include `_shared_setup.j2`
+- [x] Rendering `smoke-test` produces a valid Python test file with the fragment's content inlined where the `@<_shared_setup.j2>` reference appeared (verified — fragment's 3 import lines appear inline)
+- [x] The generated test passes when run via pytest (`make demo-smoke`)
+- [x] Skill's template picker lists all three templates by discovering `templates/*.py.j2` dynamically; `_shared_setup.j2` is excluded by underscore-prefix convention
+- [x] No regression: vision-centroid and vision-multi-assert still render and pass (full suite 24 tests green)
+- [x] Crucial finding documented in PRD: the include directive is `@<path>` with **literal angle brackets** (parser at `crates/sc-composer/src/include.rs:parse_include_directive` requires `starts_with("@<") && ends_with(">")`). The README's prose example reads ambiguously.
 
 ## Blocked by
 
