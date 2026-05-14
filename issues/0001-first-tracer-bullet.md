@@ -18,14 +18,15 @@ Everything else (other templates, the skill, real assertion math, docs) is out o
 ## Acceptance criteria
 
 - [ ] `pyproject.toml` declares Python 3.11+, package config for `hitl_lib`
-- [ ] `requirements.txt` pins `sc-compose` to a specific commit SHA (record the SHA in the file)
+- [ ] `requirements.txt` pins Python deps only (`numpy`, `pytest`). sc-compose is a Rust binary installed via `brew install randlee/tap/sc-compose` — documented in the README, not in `requirements.txt`
 - [ ] `hitl_lib/{camera,display,assertions,fixtures}.py` exist with minimal stubs sufficient to import and run one passing test
 - [ ] `conftest.py` exposes a `hitl_fixture` pytest fixture
 - [ ] `templates/vision-centroid.py.j2` exists with sc-compose frontmatter (`required_variables`, `defaults`, `metadata.purpose`)
 - [ ] `vars.example.json` checked in alongside the template
-- [ ] One documented shell command produces `tests/generated/test_demo.py`
+- [ ] One documented shell command produces `tests/generated/test_demo.py` — verified invocation is `sc-compose render --mode file --file templates/vision-centroid.py.j2 --var-file vars.example.json --output tests/generated/test_demo.py`
 - [ ] `pytest tests/generated/` exits 0
 - [ ] `.gitignore` excludes `tests/generated/` (the demo output should not be committed)
+- [ ] A `tests/test_pipeline.py` integration test executes the full render-then-pytest sequence and asserts exit code 0 (tracer-bullet test; survives refactors)
 
 ## Blocked by
 

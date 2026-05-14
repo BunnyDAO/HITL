@@ -64,12 +64,25 @@ The skill does *not* implement its own validation logic — sc-compose is the si
 
 ### Dependencies
 
-`requirements.txt` pins:
-- `sc-compose @ git+https://github.com/randlee/sc-compose@<SHA-to-be-pinned-on-first-install>`
+sc-compose is a Rust CLI (binary), not a Python package — confirmed by reading the upstream README at https://github.com/randlee/sc-compose. It cannot be installed via `pip`. The README documents `brew install randlee/tap/sc-compose` as a prerequisite (macOS), `winget install randlee.sc-compose` on Windows, or `cargo install --path crates/sc-compose` from source. The repo pins to whatever version brew currently serves (v1.0.0 at time of writing); the README mentions the version and tells future maintainers how to pin if reproducibility ever bites.
+
+`requirements.txt` covers only the Python deps:
 - `numpy>=1.26,<3`
 - `pytest>=8,<9`
 
 Marp-cli is a dev-tool dep, not a runtime dep — documented in the SOP but not in `requirements.txt`.
+
+### CLI surface
+
+The verified sc-compose invocation for our case (`--mode file`, since we author templates in `templates/` not as agent profiles):
+
+```
+sc-compose render --mode file --file templates/vision-centroid.py.j2 \
+                  --var-file vars.example.json \
+                  --output tests/generated/test_demo.py
+```
+
+`--mode profile` exists for agent/skill/command profiles resolved through runtime search chains; we don't use it.
 
 ### Layout
 
