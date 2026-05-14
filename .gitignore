@@ -13,3 +13,9 @@ __pycache__/
 # Venv
 .venv/
 venv/
+
+# Machine-local / tooling state
+.DS_Store
+.claude/promptmaxx/
+.claude/valk/
+.sc-compose/
