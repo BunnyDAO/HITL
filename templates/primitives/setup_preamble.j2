@@ -1,0 +1,12 @@
+---
+required_variables:
+  - test_name
+metadata:
+  purpose: "Setup preamble — imports every HITL test needs plus the test function declaration. Always the first primitive in a composed template."
+---
+import pytest
+from hitl_lib import assertions as hitl_assert
+from hitl_lib import camera, display
+
+
+def test_{{ test_name }}(hitl_fixture):

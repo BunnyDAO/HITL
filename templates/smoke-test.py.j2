@@ -4,12 +4,9 @@ required_variables:
 defaults:
   display_pattern: smoke
 metadata:
-  purpose: "Smoke test — minimal 'device alive' check that the fixture wiring works. Demonstrates the @<path> include mechanism for sharing fragments across templates."
+  purpose: "Smoke test — minimal 'device alive' check that the fixture wiring works. Composes from the primitives kit (setup_preamble) plus an inline assertion."
 ---
-@<_shared_setup.j2>
-
-
-def test_{{ test_name }}(hitl_fixture):
+@<primitives/setup_preamble.j2>
     display.show("{{ display_pattern }}")
     image = camera.capture()
     hitl_assert.pixel_intensity_above(image, threshold=0)
