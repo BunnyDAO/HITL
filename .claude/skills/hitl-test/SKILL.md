@@ -43,7 +43,9 @@ List all `templates/*.py.j2` files. For each one, read the YAML frontmatter
 Present them via `AskUserQuestion`. Each option's `label` is the stem; the
 `description` is the `metadata.purpose` value.
 
-The first template in alphabetical order is the Recommended option.
+`vision-centroid` is the Recommended option when present (it's the demo's
+wow-moment template); otherwise fall back to the first template in
+alphabetical order.
 
 ## Step 2 — walk the variables
 
