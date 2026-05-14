@@ -2,7 +2,7 @@
 id: 0013
 title: Primitive + composition lint tests + /hitl-test default-template tweak
 type: AFK
-status: open
+status: done
 blocked_by: [0012]
 parent: docs/prd/primitives-kit-and-hitl-author.md
 ---
