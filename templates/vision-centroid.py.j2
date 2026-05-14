@@ -9,17 +9,8 @@ defaults:
   capture_delay_ms: 500
   retries: 3
 metadata:
-  purpose: "Vision centroid alignment test — show a pattern, capture an image, assert the centroid lands within tolerance of a target pixel"
+  purpose: "Vision centroid alignment test — show a pattern, capture an image, assert the centroid lands within tolerance of a target pixel. Composes from the kit: setup_preamble + pattern_capture + assert_centroid."
 ---
-import pytest
-from hitl_lib import assertions, camera, display
-
-
-def test_{{ test_name }}(hitl_fixture):
-    display.show("{{ display_pattern }}")
-    image = camera.capture(delay_ms={{ capture_delay_ms }}, retries={{ retries }})
-    assertions.centroid_within(
-        image,
-        target=({{ target_x }}, {{ target_y }}),
-        tolerance_px={{ tolerance_px }},
-    )
+@<primitives/setup_preamble.j2>
+@<primitives/pattern_capture.j2>
+@<primitives/assert_centroid.j2>

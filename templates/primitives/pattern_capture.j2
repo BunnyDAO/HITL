@@ -1,0 +1,11 @@
+---
+required_variables:
+  - display_pattern
+defaults:
+  capture_delay_ms: 500
+  retries: 3
+metadata:
+  purpose: "Pattern capture — show a display pattern and capture an image. Conventional order: after setup_preamble, before any assertion primitive."
+---
+    display.show("{{ display_pattern }}")
+    image = camera.capture(delay_ms={{ capture_delay_ms }}, retries={{ retries }})

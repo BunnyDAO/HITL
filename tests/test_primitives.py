@@ -27,6 +27,16 @@ PRIMITIVES: list[tuple[str, dict, str]] = [
         {"test_name": "demo"},
         "def test_demo(hitl_fixture):",
     ),
+    (
+        "pattern_capture",
+        {"display_pattern": "dot_grid", "capture_delay_ms": 500, "retries": 3},
+        'display.show("dot_grid")',
+    ),
+    (
+        "assert_centroid",
+        {"target_x": 100, "target_y": 100, "tolerance_px": 5},
+        "hitl_assert.centroid_within(image, target=(100, 100), tolerance_px=5)",
+    ),
 ]
 
 

@@ -1,0 +1,9 @@
+---
+required_variables:
+  - target_x
+  - target_y
+  - tolerance_px
+metadata:
+  purpose: "Assert centroid within tolerance — one hitl_assert.centroid_within call. Must come after pattern_capture (uses the `image` variable it binds)."
+---
+    hitl_assert.centroid_within(image, target=({{ target_x }}, {{ target_y }}), tolerance_px={{ tolerance_px }})
