@@ -1,12 +1,16 @@
 # Agentic HITL Test Generator — worked example
 
-A teaching repo that demonstrates how three layers — a mock fixture library, sc-compose templates, and a Claude Code skill — let test engineers generate real, runnable Python tests through a constrained conversation, without writing code themselves. Runs end-to-end on a laptop with no real hardware.
+A teaching repo that demonstrates how four moving parts — a mock fixture library, a kit of sc-compose template primitives, and two Claude Code skills (`/hitl-test` and `/hitl-author`) — let non-programmer test engineers both **run** and **design** real Python tests through a constrained conversation. Runs end-to-end on a laptop with no real hardware.
 
-**Start here:** [`docs/sop.md`](docs/sop.md) (full architecture doc, ~15 minutes) or [`docs/deck.md`](docs/deck.md) (10-minute slide version, Marp markdown).
+## Pick your path
+
+- **You write code** (developer, dev lead, maintainer) → **[`docs/sop.md`](docs/sop.md)** — the architecture doc. ~20 minutes.
+- **You don't write code** (test engineer, QA, anyone using `/hitl-test` or `/hitl-author`) → **[`docs/test-engineer-guide.md`](docs/test-engineer-guide.md)** — the user manual. ~10 minutes.
+- **You're presenting this to a team** → **[`docs/deck.md`](docs/deck.md)** — Marp slide deck, ~10 minutes to present.
 
 ## Getting started
 
-Prerequisites: macOS or Linux with [Homebrew](https://brew.sh), Python 3.11+, and Claude Code.
+Prerequisites: macOS or Linux with [Homebrew](https://brew.sh), Python 3.11+, and [Claude Code](https://claude.com/claude-code).
 
 ```bash
 # 1. Install sc-compose (the deterministic template renderer — a Rust CLI).
@@ -17,65 +21,58 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 
-# 3. Run the hand-rendered demo (no agent involved).
-make demo            # vision-centroid → PASSES with tolerance_px=5
-make demo-multi      # multi-assert template (Jinja {% for %} loop)
-make demo-smoke      # smoke-test template (demonstrates @<path> include)
+# 3. Run the hand-rendered demos (no agent involved).
+make demo            # vision-centroid: centroid alignment, passes
+make demo-multi      # multi-assertion: loops over checks
+make demo-smoke      # smoke-test: minimal device-alive
+make demo-authored   # engineer-authored example template
 
-# 4. Run the repo's own test suite (28 tests, ~0.2s).
+# 4. Run the repo's own test suite (45 tests, ~1s).
 make test
 ```
 
-### Run the agentic flow
-
-Open this directory in Claude Code, start a fresh session, and type:
-
-```
-/hitl-test
-```
-
-The skill discovers the three templates, asks you which to render, walks the chosen template's `required_variables` one at a time via `AskUserQuestion`, calls `sc-compose render` as a subprocess, and offers to run pytest. See [`docs/sop.md`](docs/sop.md) for a worked transcript.
+To use the agentic flows: open this directory in Claude Code, start a fresh session, and type `/hitl-test` or `/hitl-author`. See [`docs/test-engineer-guide.md`](docs/test-engineer-guide.md) for what each skill does.
 
 ## Repo layout
 
 ```
-hitl_lib/                    Mock fixture library (camera, display, assertions, pytest fixture).
-                             Real numpy math on synthetic dot patterns; mocked at the hardware boundary.
+hitl_lib/                    Mock fixture library (camera, display, assertions).
+                             Real numpy math on synthetic dot patterns.
 
-templates/                   sc-compose Jinja templates with YAML frontmatter contracts:
-  vision-centroid.py.j2       single assertion
-  vision-multi-assert.py.j2   loops over a list of assertion calls
-  smoke-test.py.j2            uses @<_shared_setup.j2> include
-  _shared_setup.j2            shared imports fragment
+templates/
+  vision-centroid.py.j2       Centroid alignment test    (composes from kit)
+  vision-multi-assert.py.j2   Multi-assertion sequence   (composes from kit + Jinja loop)
+  smoke-test.py.j2            Device-alive check         (composes from kit)
+  centroid-with-intensity.py.j2  Engineer-authored example
+  primitives/                 The kit (4 sub-template fragments)
+    setup_preamble.j2          imports + def line
+    pattern_capture.j2         display.show + camera.capture
+    assert_centroid.j2         centroid_within call
+    assert_intensity.j2        pixel_intensity_above call
 
-.claude/skills/hitl-test/    The Claude Code skill (SKILL.md) — runbook for the agent.
+.claude/skills/
+  hitl-test/SKILL.md          Skill: render an existing template
+  hitl-author/SKILL.md        Skill: author a new template from primitives
 
 docs/
-  sop.md                      Full architecture doc (start here).
-  deck.md                     Marp slide deck (10-minute version).
-  prd/                        Design history (PRD).
+  sop.md                      Developer/architecture doc.
+  test-engineer-guide.md      Non-programmer user manual.
+  deck.md                     Marp slide deck.
+  prd/                        Design history (PRDs).
 
-issues/                      Implementation history — 9 vertical slices, numbered 0001..0009.
+issues/                      Implementation history (vertical slices 0001..0015)
+                             plus issues/primitive-requests/ for kit-extension requests.
 
-tests/                       Repo's own test suite (28 tests).
-  test_assertions.py          unit tests for the centroid math
-  test_camera.py              unit tests for the deterministic-jitter mock camera
-  test_pipeline.py            end-to-end tracer (render → pytest)
-  test_template_render.py     parametrized render-smoke tests for every template
-  test_skill_doc.py           lint tests guarding SKILL.md ↔ template alignment
-  generated/                  demo output — gitignored, regenerated by `make demo*`
-
-vars.*.json                  Known-valid var sets, used by both the Makefile demos
-                             and the render-smoke tests.
-
-Makefile                     `make demo`, `make demo-multi`, `make demo-smoke`, `make test`.
+tests/                       45 tests; ~1s. Run with `make test`.
+vars.*.json                  Example var sets — used by both `make demo*` and tests.
+Makefile                     `make demo*`, `make test`.
 ```
 
 ## What this is not
 
-- **Real-hardware code.** The fixture library is mocked. The `camera.capture()` function returns a seeded-jitter dot pattern, not a real image. See the PRD if you want the rationale.
+- **Real-hardware code.** The fixture library is mocked. `camera.capture()` returns a seeded-jitter dot pattern, not a real image.
 - **A production framework.** This is a worked example, not a library to depend on. Take the pattern, leave the code.
-- **Coupled to vision.** Three vision-flavored templates ship as a teaching catalog. Adapting the pattern to audio, motion, or any other domain is a SOP section.
+- **Coupled to vision.** Four vision-flavored templates ship as a teaching catalog. Adapting the pattern to audio, motion, or any other domain is a SOP section.
 
 ## License
 

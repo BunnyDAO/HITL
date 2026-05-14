@@ -2,7 +2,7 @@
 id: 0015
 title: Docs reorganization — README front door + test-engineer-guide + SOP kit sections
 type: HITL
-status: open
+status: done
 blocked_by: [0014]
 parent: docs/prd/primitives-kit-and-hitl-author.md
 ---
@@ -21,14 +21,13 @@ Three coordinated documentation changes so that each audience reads a doc tuned 
 
 ## Acceptance criteria
 
-- [ ] `README.md` rewritten: under 80 lines, opens with one elevator-pitch sentence and a two-link "audience? read this" paragraph. Old content moved or removed; no architecture content remains
-- [ ] `docs/test-engineer-guide.md` exists, written in non-programmer language throughout — no mentions of Jinja, pytest fixtures, ast.parse, frontmatter syntax, sc-compose CLI flags. Vocabulary picked once and used consistently
-- [ ] `docs/sop.md` extended with the four sections above; existing sections preserved
-- [ ] The SOP's manual walkthrough checklist gains a step for verifying `/hitl-author` after edits
-- [ ] All three audience docs link to each other appropriately — the test-engineer guide links to the SOP for developers reading along, the SOP links to the guide for "what your test engineers see"
-- [ ] No internal links break (no references to files that don't exist or paths that moved)
-- [ ] Existing `docs/deck.md` is unchanged
-- [ ] Full test suite still passes (docs changes shouldn't touch tests, but verify)
+- [x] `README.md` rewritten: 79 lines (under 80), opens with one-sentence pitch + a three-option "Pick your path" paragraph (developer, test engineer, presenter). No architecture content remains.
+- [x] `docs/test-engineer-guide.md` exists (101 lines, ~1050 words), written in non-programmer language. Avoids Jinja, AST parsing, frontmatter syntax, sc-compose CLI flags. "Primitives = building blocks" introduced once and used consistently.
+- [x] `docs/sop.md` extended with: "The primitives kit" (new section with composition mermaid diagram), "Authoring new shapes via /hitl-author" (new section), "The review story" (new section). Layer 2 paragraph updated to describe 4 templates composing from primitives. Word count: 1999.
+- [x] SOP's manual walkthrough checklist now has 9 steps (was 6) covering `make demo-authored`, `/hitl-author` end-to-end, and the no-fit case landing in `issues/primitive-requests/`.
+- [x] Cross-links: README → SOP + test-engineer-guide + deck; test-engineer-guide → README + SOP. All paths verified.
+- [x] `docs/deck.md` unchanged.
+- [x] Full test suite (45 tests + 4 documented skips) still passes — no test files touched.
 
 ## Blocked by
 
