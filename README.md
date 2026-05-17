@@ -28,8 +28,9 @@ make demo            # vision-centroid: centroid alignment, passes
 make demo-multi      # multi-assertion: loops over checks
 make demo-smoke      # smoke-test: minimal device-alive
 make demo-authored   # engineer-authored example template
+make demo-fgr        # FGR cross-ROI uniformity (display-metrology example)
 
-# 4. Run the repo's own test suite (45 tests, ~1s).
+# 4. Run the repo's own test suite (62 tests + 6 skipped, ~1s).
 make test
 ```
 
@@ -46,11 +47,14 @@ templates/
   vision-multi-assert.py.j2   Multi-assertion sequence   (composes from kit + Jinja loop)
   smoke-test.py.j2            Device-alive check         (composes from kit)
   centroid-with-intensity.py.j2  Engineer-authored example
-  primitives/                 The kit (4 sub-template fragments)
+  fgr-uniformity.py.j2        FGR cross-ROI uniformity   (display-metrology domain example)
+  primitives/                 The kit (6 sub-template fragments)
     setup_preamble.j2          imports + def line
     pattern_capture.j2         display.show + camera.capture
     assert_centroid.j2         centroid_within call
     assert_intensity.j2        pixel_intensity_above call
+    tile_rois.j2               roi.tile into a grid of ROIs
+    assert_roi_uniformity.j2   cross-ROI uniformity check
 
 .claude/skills/
   hitl-test/SKILL.md          Skill: render an existing template
@@ -64,7 +68,7 @@ docs/
 issues/                      Implementation history (vertical slices 0001..0015)
                              plus issues/primitive-requests/ for kit-extension requests.
 
-tests/                       45 tests; ~1s. Run with `make test`.
+tests/                       62 tests + 6 skipped; ~1s. Run with `make test`.
 vars.*.json                  Example var sets — used by both `make demo*` and tests.
 Makefile                     `make demo*`, `make test`.
 ```

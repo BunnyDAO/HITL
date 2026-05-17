@@ -27,6 +27,8 @@ A primitive is a **building block** for a test. Each one does one specific thing
 | `pattern_capture` | Shows a pattern on the display and snaps a picture with the camera. | `display_pattern` (plus delay/retry defaults) |
 | `assert_centroid` | Checks that the bright spot in the picture is near where you expected it. | `target_x`, `target_y`, `tolerance_px` |
 | `assert_intensity` | Checks that the picture isn't blank — at least one pixel is bright enough. | `intensity_threshold` |
+| `tile_rois` | Splits the captured image into a grid of regions of interest. | `grid_rows`, `grid_cols` |
+| `assert_roi_uniformity` | Checks the display is evenly lit — brightest vs. dimmest region within tolerance. | `max_deviation_pct` |
 
 You assemble these in order: **setup → take a picture → run one or more checks**. That sequence becomes a real test file. You never see Python; the system handles the assembly. Adding a fifth primitive is a developer change — see [When to ask a developer](#when-to-ask-a-developer).
 
@@ -106,7 +108,7 @@ graph TB
 
 **Layer 1 — `hitl_lib/`.** Plain Python. `camera.capture()` returns a numpy 2D grayscale array; `display.show(pattern)` tracks the current pattern in module state; `assertions.centroid_within(image, target, tolerance_px)` computes the real image-moments centroid and raises a useful `AssertionError`. The pytest fixture is registered as a `pytest11` entry point so generated tests find it even when written outside the repo's `conftest.py` tree. **No real hardware lives here** — the camera returns a seeded-jitter dot pattern. The point is to mock at the hardware boundary while keeping the math real.
 
-**Layer 2 — `templates/*.py.j2`.** sc-compose templates with YAML frontmatter declaring `required_variables` and `defaults`. Four templates ship — `vision-centroid`, `vision-multi-assert`, `smoke-test`, and an engineer-authored example `centroid-with-intensity` — all composing from the **primitives kit** at `templates/primitives/`. Templates are reviewable as one file each; their output is reproducible given the same inputs.
+**Layer 2 — `templates/*.py.j2`.** sc-compose templates with YAML frontmatter declaring `required_variables` and `defaults`. Five templates ship — `vision-centroid`, `vision-multi-assert`, `smoke-test`, the engineer-authored example `centroid-with-intensity`, and the display-metrology domain example `fgr-uniformity` — all composing from the **primitives kit** at `templates/primitives/`. Templates are reviewable as one file each; their output is reproducible given the same inputs.
 
 **Layer 3 — the two skills.** Both are single-stage `AskUserQuestion`-driven runbooks. `/hitl-test` consumes templates: discover → walk variables → render → run. `/hitl-author` produces templates: name → intent → pick primitives → walk variables → author. Neither validates variables themselves — sc-compose is the single source of truth on what counts as a valid input set.
 
@@ -123,22 +125,43 @@ graph LR
         pc["pattern_capture.j2<br/>(display_pattern + delay/retries defaults)"]
         ac["assert_centroid.j2<br/>(target_x, target_y, tolerance_px)"]
         ai["assert_intensity.j2<br/>(intensity_threshold)"]
+        tr["tile_rois.j2<br/>(grid_rows, grid_cols)"]
+        au["assert_roi_uniformity.j2<br/>(max_deviation_pct)"]
     end
     subgraph top["templates/*.py.j2 (top-level)"]
         vc["vision-centroid"]
         vma["vision-multi-assert"]
         st["smoke-test"]
         eng["centroid-with-intensity<br/>(engineer-authored)"]
+        fgr["fgr-uniformity<br/>(display-metrology domain example)"]
     end
-    sp --> vc & vma & st & eng
-    pc --> vc & vma & st & eng
+    sp --> vc & vma & st & eng & fgr
+    pc --> vc & vma & st & eng & fgr
     ac --> vc & eng
     ai --> st & eng
+    tr --> fgr
+    au --> fgr
 ```
 
 sc-compose's `FR-3a` spec automatically merges `required_variables` across the include graph — including a primitive that needs `display_pattern` means the composing template inherits `display_pattern` as required without having to repeat the declaration. Same for `defaults`, with the composing template winning on conflict.
 
-Adding a fifth primitive is a developer change: new file in `templates/primitives/`, new parametrized entry in `tests/test_primitives.py`, and a mention in both skills' SKILL.md hint sections. New primitives flow from `issues/primitive-requests/` — files written by `/hitl-author` when an engineer's intent doesn't fit existing primitives.
+Adding a primitive is a developer change: new file in `templates/primitives/`, new parametrized entry in `tests/test_primitives.py`, and a mention in both skills' SKILL.md hint sections. New primitives flow from `issues/primitive-requests/` — files written by `/hitl-author` when an engineer's intent doesn't fit existing primitives.
+
+---
+
+## Domain example — FGR cross-ROI uniformity
+
+The vision primitives (dot, centroid) are deliberately toy — enough to prove the machinery without committing to a domain. `fgr-uniformity` is the first **real** display-metrology example, expressed in the vocabulary an optical-test engineer actually uses (see `CONTEXT.md` for the canonical glossary: FGR, ROI, Lv, Uniformity).
+
+**What it measures.** An FGR (Flat Gray Raster) is a nominally-uniform mid-gray pattern shown full-screen to check how evenly a panel emits light. The template shows the FGR, captures it, tiles the capture into a `grid_rows × grid_cols` grid of ROIs, and asserts the cross-ROI luminance uniformity is within tolerance:
+
+> `uniformity = (max_ROI_mean_Lv − min_ROI_mean_Lv) / max_ROI_mean_Lv`, as a percent.
+
+This is a **cross-ROI** metric — regions compared to each other — not a per-pixel or within-ROI spread. `CONTEXT.md` names the within-ROI metric only to keep the distinction sharp; it is not implemented.
+
+**It composes entirely from the kit**: `setup_preamble → pattern_capture (display_pattern=fgr) → tile_rois → assert_roi_uniformity`. Only `tile_rois` and `assert_roi_uniformity` are FGR-specific; `pattern_capture` is reused unchanged. The mock camera's `"fgr"` branch returns a deterministic mid-gray field with a documented corner fall-off (~3.6% deviation on a 3×3 grid) — so the same tunable wow moment the centroid example has carries over: `max_deviation_pct=5` passes, `=2` fails with `cross-ROI uniformity deviation was 3.64% (brightest ROI mean 126.26, dimmest 121.66); tolerance was 2%`.
+
+This is the template a teammate evaluating the pattern for a real display-test program should read first: it shows the pattern is not vision-toy-only, and it is exactly the shape `/hitl-author` would produce if a developer had shipped `tile_rois` and `assert_roi_uniformity` in response to a primitive-request.
 
 ---
 
@@ -230,11 +253,12 @@ The transcript below shows what `/hitl-test` produces. Reproduced from `.claude/
 ```
 Engineer: /hitl-test
 
-/hitl-test: I see four templates here. Which one are you running?
+/hitl-test: I see five templates here. Which one are you running?
   ▸ vision-centroid — Vision centroid alignment test (Recommended)
     vision-multi-assert — Multi-assertion test, loops over a list
     smoke-test — Minimal device-alive check
     centroid-with-intensity — Centroid + intensity sanity check
+    fgr-uniformity — FGR cross-ROI luminance uniformity
 Engineer: vision-centroid
 
 /hitl-test: What should we call this test? (snake_case)
@@ -272,15 +296,16 @@ Same template. Different number. Different outcome. The engineer feels the varia
 
 Both skills are LLM-mediated — there's no unit test that runs them end-to-end. After any edit to either SKILL.md, the primitives kit, the top-level templates, or `hitl_lib/`:
 
-1. `make test` — full suite green (45 tests).
+1. `make test` — full suite green (62 passed, 6 skipped).
 2. `make demo` — vision-centroid renders + passes.
 3. `make demo-multi` — multi-assert renders with two assertion calls, passes.
 4. `make demo-smoke` — smoke-test renders (composing from primitives) and passes.
 5. `make demo-authored` — engineer-authored example renders; authoring-trail block visible at the top of `tests/generated/test_authored.py`.
-6. Render `vision-centroid` with `vars.tight.json` → confirm the failure diagnostic names the observed centroid and distance.
-7. Fresh Claude Code session → `/hitl-test` → walk one template end-to-end → confirm AskUserQuestion menus match SKILL.md.
-8. Fresh Claude Code session → `/hitl-author` → author a throwaway template → confirm the authoring-trail block survives rendering and the new file is discoverable by `/hitl-test`.
-9. Fresh Claude Code session → `/hitl-author` → indicate "none of the primitives fit" → confirm a file lands in `issues/primitive-requests/`.
+6. `make demo-fgr` — FGR uniformity renders + passes (`max_deviation_pct=5`).
+7. Render `vision-centroid` with `vars.tight.json` → confirm the failure diagnostic names the observed centroid and distance. Render `fgr-uniformity` with `vars.fgr-tight.json` → confirm it fails naming the observed cross-ROI deviation.
+8. Fresh Claude Code session → `/hitl-test` → walk one template end-to-end → confirm AskUserQuestion menus match SKILL.md.
+9. Fresh Claude Code session → `/hitl-author` → author a throwaway template → confirm the authoring-trail block survives rendering and the new file is discoverable by `/hitl-test`.
+10. Fresh Claude Code session → `/hitl-author` → indicate "none of the primitives fit" → confirm a file lands in `issues/primitive-requests/`.
 
 `tests/test_skill_doc.py` + `tests/test_hitl_author_doc.py` catch drift between SKILL.md and the kit/template contracts, but they cannot catch UX-quality drift — that's what steps 7–9 are for.
 
