@@ -209,11 +209,11 @@ sequenceDiagram
             Engineer-->>Skill: answer
         end
         Skill->>FS: write new template + authoring trail
-        Skill->>Engineer: file ready; open a PR
+        Skill->>Engineer: file ready, open a PR
         Engineer->>Dev: PR review
     else no primitive fits
         Skill->>Req: write primitive-request markdown
-        Skill->>Engineer: developer will add a primitive; re-run later
+        Skill->>Engineer: developer will add a primitive, re-run later
     end
 ```
 
