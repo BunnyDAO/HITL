@@ -248,7 +248,31 @@ What this gives up vs. "developers write all templates": engineers can propose t
 
 ## Worked interaction
 
-The transcript below shows what `/hitl-test` produces. Reproduced from `.claude/skills/hitl-test/SKILL.md`; run the skill yourself to verify.
+The shape of the exchange first, then the verbatim transcript below it.
+
+```mermaid
+sequenceDiagram
+    actor Engineer
+    participant Skill as "/hitl-test"
+    participant PT as pytest
+
+    Engineer->>Skill: /hitl-test
+    Skill->>Engineer: which template? (five options)
+    Engineer-->>Skill: vision-centroid
+    Skill->>Engineer: test name?
+    Engineer-->>Skill: grid_centroid_alignment
+    Skill->>Engineer: which display pattern?
+    Engineer-->>Skill: dot_grid
+    Skill->>Engineer: target and tolerance?
+    Engineer-->>Skill: 100, 100, 5
+    Skill->>Engineer: rendered the test file, run pytest?
+    Engineer-->>Skill: yes
+    Skill->>PT: pytest the generated file
+    PT-->>Engineer: PASSED
+    Note over Engineer,PT: re-run with tolerance 1, then FAILED with the 3.16px diagnostic
+```
+
+The verbatim transcript (reproduced from `.claude/skills/hitl-test/SKILL.md`; run the skill yourself to verify):
 
 ```
 Engineer: /hitl-test
