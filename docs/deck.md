@@ -23,7 +23,7 @@ come through as code. Options:
 A pattern for letting non-programmer test engineers
 **run** and **design** real test code through a constrained conversation.
 
-Four layers · Two skills · Mocked hardware
+Three layers · Two skills · Mocked hardware
 
 <!-- _paginate: false -->
 
@@ -57,15 +57,13 @@ The fix is to make the **structure** non-negotiable.
 
 ---
 
-## The pattern — four layers
+## The pattern — three layers
 
 ```mermaid
 graph TB
-    subgraph L4[Layer 4 — Agent skill]
-        author["/hitl-author<br/>compose primitives → new template"]
-    end
-    subgraph L3[Layer 3 — Agent skill]
+    subgraph L3[Layer 3 — Agent skills]
         test["/hitl-test<br/>fill variables in an existing template"]
+        author["/hitl-author<br/>compose primitives → new template"]
     end
     subgraph L2[Layer 2 — sc-compose]
         templates["templates/*.py.j2 (full recipes)"]
@@ -154,9 +152,9 @@ One `AskUserQuestion` per variable. Engineer never sees Python.
 
 ---
 
-## Layer 4 — `/hitl-author` (the new-shape path)
+## Layer 3 (cont.) — `/hitl-author` (the new-shape path)
 
-**The architectural reason there are two skills, not just two prompts:**
+**The architectural reason there are two Layer-3 skills, not just two prompts:**
 
 - `/hitl-test` only varies **values** of an existing template.
 - `/hitl-author` is the only way to vary **the test's structure** — which checks run, in what order, against what capture.

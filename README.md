@@ -1,6 +1,6 @@
 # Agentic HITL Test Generator — worked example
 
-A teaching repo that demonstrates how four layers — a mock fixture library (Layer 1), a kit of sc-compose template primitives (Layer 2), and two Claude Code skills, `/hitl-test` (Layer 3) and `/hitl-author` (Layer 4) — let non-programmer test engineers both **run** and **design** real Python tests through a constrained conversation. Runs end-to-end on a laptop with no real hardware.
+A teaching repo that demonstrates how three layers — a mock fixture library (Layer 1), a kit of sc-compose template primitives (Layer 2), and two Claude Code skills, `/hitl-test` and `/hitl-author`, that share Layer 3 — let non-programmer test engineers both **run** and **design** real Python tests through a constrained conversation. Runs end-to-end on a laptop with no real hardware.
 
 ## Pick your path
 
