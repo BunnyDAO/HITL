@@ -1,6 +1,6 @@
 # Agentic HITL Test Generator — worked example
 
-A teaching repo that demonstrates how four moving parts — a mock fixture library, a kit of sc-compose template primitives, and two Claude Code skills (`/hitl-test` and `/hitl-author`) — let non-programmer test engineers both **run** and **design** real Python tests through a constrained conversation. Runs end-to-end on a laptop with no real hardware.
+A teaching repo that demonstrates how four layers — a mock fixture library (Layer 1), a kit of sc-compose template primitives (Layer 2), and two Claude Code skills, `/hitl-test` (Layer 3) and `/hitl-author` (Layer 4) — let non-programmer test engineers both **run** and **design** real Python tests through a constrained conversation. Runs end-to-end on a laptop with no real hardware.
 
 ## Pick your path
 
@@ -65,7 +65,7 @@ docs/
   deck.md                     Marp slide deck for presentations.
   prd/                        Design history (PRDs).
 
-issues/                      Implementation history (vertical slices 0001..0015)
+issues/                      Implementation history (vertical slices 0001..0018)
                              plus issues/primitive-requests/ for kit-extension requests.
 
 tests/                       62 tests + 6 skipped; ~1s. Run with `make test`.
@@ -77,7 +77,7 @@ Makefile                     `make demo*`, `make test`.
 
 - **Real-hardware code.** The fixture library is mocked. `camera.capture()` returns a seeded-jitter dot pattern, not a real image.
 - **A production framework.** This is a worked example, not a library to depend on. Take the pattern, leave the code.
-- **Coupled to vision.** Four vision-flavored templates ship as a teaching catalog. Adapting the pattern to audio, motion, or any other domain is a SOP section.
+- **Coupled to vision.** The catalog is mostly vision-flavored toys (dot, centroid), but `fgr-uniformity` is a real display-metrology example precisely to show the pattern is domain-agnostic. Adapting it to audio, motion, or any other domain is a SOP section.
 
 ## License
 

@@ -30,7 +30,7 @@ A primitive is a **building block** for a test. Each one does one specific thing
 | `tile_rois` | Splits the captured image into a grid of regions of interest. | `grid_rows`, `grid_cols` |
 | `assert_roi_uniformity` | Checks the display is evenly lit — brightest vs. dimmest region within tolerance. | `max_deviation_pct` |
 
-You assemble these in order: **setup → take a picture → run one or more checks**. That sequence becomes a real test file. You never see Python; the system handles the assembly. Adding a fifth primitive is a developer change — see [When to ask a developer](#when-to-ask-a-developer).
+You assemble these in order: **setup → take a picture → run one or more checks**. That sequence becomes a real test file. You never see Python; the system handles the assembly. Adding a new primitive is a developer change — see [When to ask a developer](#when-to-ask-a-developer).
 
 ---
 
