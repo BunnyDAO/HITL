@@ -180,10 +180,10 @@ sequenceDiagram
     Skill->>Engineer: AskUserQuestion: pick template
     Engineer-->>Skill: vision-centroid
     loop required_variables
-        Skill->>Engineer: AskUserQuestion: <var>
+        Skill->>Engineer: AskUserQuestion per variable
         Engineer-->>Skill: answer
     end
-    Skill->>SC: render --var-file <tmp.json>
+    Skill->>SC: render with a temp var-file
     SC->>FS: write rendered .py
     SC-->>Skill: exit 0 (or stderr verbatim)
     Skill->>PT: pytest tests/generated/test_X.py
@@ -196,7 +196,7 @@ sequenceDiagram
 sequenceDiagram
     actor Engineer
     participant Skill as "/hitl-author"
-    participant FS as "templates/<name>.py.j2"
+    participant FS as "templates/NAME.py.j2"
     participant Req as "issues/primitive-requests/"
     participant Dev as Developer
 
@@ -205,7 +205,7 @@ sequenceDiagram
     Engineer-->>Skill: answers (or "none fit")
     alt primitives fit
         loop required_variables (union)
-            Skill->>Engineer: AskUserQuestion: <var>
+            Skill->>Engineer: AskUserQuestion per variable
             Engineer-->>Skill: answer
         end
         Skill->>FS: write new template + authoring trail
