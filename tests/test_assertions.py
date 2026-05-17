@@ -90,3 +90,45 @@ def test_pixel_intensity_above_message_includes_observed_max():
     with pytest.raises(AssertionError) as exc:
         assertions.pixel_intensity_above(img, threshold=200)
     assert "73" in str(exc.value) and "200" in str(exc.value)
+
+
+# --- roi_uniformity_within (FGR cross-ROI uniformity, see CONTEXT.md) ---
+
+from hitl_lib import roi as _roi  # noqa: E402
+
+
+def _split_field(left_val: int, right_val: int, size: int = 200) -> np.ndarray:
+    img = np.full((size, size), left_val, dtype=np.uint8)
+    img[:, size // 2 :] = right_val
+    return img
+
+
+def test_roi_uniformity_passes_on_flat_field():
+    img = np.full((200, 200), 128, dtype=np.uint8)
+    rois = _roi.tile(img, rows=3, cols=3)
+    assertions.roi_uniformity_within(img, rois, max_deviation_pct=1)
+
+
+def test_roi_uniformity_fails_on_gradient_exceeding_threshold():
+    # left=90, right=100, 1x2 grid → uniformity = (100-90)/100 = 10%.
+    img = _split_field(90, 100)
+    rois = _roi.tile(img, rows=1, cols=2)
+    with pytest.raises(AssertionError, match="uniformity|deviation"):
+        assertions.roi_uniformity_within(img, rois, max_deviation_pct=5)
+
+
+def test_roi_uniformity_boundary_exactly_at_threshold_passes():
+    img = _split_field(90, 100)  # exactly 10% deviation
+    rois = _roi.tile(img, rows=1, cols=2)
+    assertions.roi_uniformity_within(img, rois, max_deviation_pct=10)
+
+
+def test_roi_uniformity_message_names_deviation_and_extremes():
+    img = _split_field(90, 100)
+    rois = _roi.tile(img, rows=1, cols=2)
+    with pytest.raises(AssertionError) as exc:
+        assertions.roi_uniformity_within(img, rois, max_deviation_pct=2)
+    msg = str(exc.value)
+    assert "10" in msg, f"must name observed deviation %; got: {msg}"
+    assert "100" in msg and "90" in msg, f"must name brightest/dimmest ROI means; got: {msg}"
+    assert "2" in msg, f"must name the threshold; got: {msg}"

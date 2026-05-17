@@ -59,3 +59,50 @@ def pixel_intensity_above(image: np.ndarray, threshold: float) -> None:
             f"max pixel intensity was {observed_max:.0f}; "
             f"expected something above {threshold}"
         )
+
+
+def roi_uniformity_within(
+    image: np.ndarray,
+    rois: list[tuple[int, int, int, int]],
+    max_deviation_pct: float,
+) -> None:
+    """Assert cross-ROI luminance uniformity is within tolerance.
+
+    For each ROI `(x, y, w, h)`, compute its mean luminance. Then:
+
+        uniformity = (max_ROI_mean - min_ROI_mean) / max_ROI_mean * 100
+
+    (the canonical metric — see CONTEXT.md). Raises `AssertionError`
+    naming the observed deviation, the brightest and dimmest ROI means,
+    and the threshold when uniformity exceeds `max_deviation_pct`.
+
+    This is a cross-ROI metric (ROIs compared to each other), NOT a
+    per-pixel or within-ROI spread.
+    """
+    if not isinstance(image, np.ndarray):
+        raise AssertionError(
+            f"expected numpy.ndarray, got {type(image).__name__}"
+        )
+    if not rois:
+        raise AssertionError("no ROIs supplied — nothing to compare")
+
+    means = [
+        float(image[y : y + h, x : x + w].mean())
+        for (x, y, w, h) in rois
+    ]
+    max_mean = max(means)
+    min_mean = min(means)
+
+    if max_mean == 0.0:
+        raise AssertionError(
+            "all ROIs are uniformly zero — no luminance to compare"
+        )
+
+    deviation_pct = (max_mean - min_mean) / max_mean * 100.0
+
+    if deviation_pct > max_deviation_pct:
+        raise AssertionError(
+            f"cross-ROI uniformity deviation was {deviation_pct:.2f}% "
+            f"(brightest ROI mean {max_mean:.2f}, dimmest {min_mean:.2f}); "
+            f"tolerance was {max_deviation_pct}%"
+        )
