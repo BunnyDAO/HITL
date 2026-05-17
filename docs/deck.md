@@ -21,9 +21,9 @@ come through as code. Options:
 # Agentic HITL Test Generator
 
 A pattern for letting non-programmer test engineers
-generate real test code through a constrained conversation.
+**run** and **design** real test code through a constrained conversation.
 
-Three layers · One worked example · Mocked hardware
+Four layers · Two skills · Mocked hardware
 
 <!-- _paginate: false -->
 
@@ -57,20 +57,26 @@ The fix is to make the **structure** non-negotiable.
 
 ---
 
-## The pattern — three layers
+## The pattern — four layers
 
 ```mermaid
 graph TB
-    subgraph L3[Layer 3 — Agent skill]
-        skill["/hitl-test (SKILL.md)<br/>discover · walk · render · run"]
+    subgraph L4[Layer 4 — Agent skill]
+        author["/hitl-author<br/>compose primitives → new template"]
     end
-    subgraph L2[Layer 2 — sc-compose templates]
-        templates["templates/*.py.j2<br/>frontmatter contract + Jinja body"]
+    subgraph L3[Layer 3 — Agent skill]
+        test["/hitl-test<br/>fill variables in an existing template"]
+    end
+    subgraph L2[Layer 2 — sc-compose]
+        templates["templates/*.py.j2 (full recipes)"]
+        primitives["templates/primitives/ (building blocks)"]
+        templates -->|@&lt;primitives/...&gt;| primitives
     end
     subgraph L1[Layer 1 — Fixture library]
         lib["hitl_lib/<br/>camera · display · assertions"]
     end
-    skill -->|renders| templates
+    test -->|renders| templates
+    author -->|writes new| templates
     templates -->|generated code calls| lib
 ```
 
@@ -98,9 +104,9 @@ Mocked at the hardware boundary. Everything else is real.
 
 ---
 
-## Layer 2 — sc-compose templates
+## Layer 2 — templates + primitives kit
 
-YAML frontmatter declares the contract. Jinja body owns the structure.
+**Templates** are full test recipes. **Primitives** are the building blocks templates are composed from.
 
 ```jinja
 ---
@@ -110,24 +116,20 @@ required_variables:
   - target_x
   - target_y
   - tolerance_px
-defaults:
-  capture_delay_ms: 500
 metadata:
   purpose: "Vision centroid alignment test"
 ---
-def test_{{ test_name }}(hitl_fixture):
-    display.show("{{ display_pattern }}")
-    image = camera.capture(delay_ms={{ capture_delay_ms }})
-    assertions.centroid_within(image,
-        target=({{ target_x }}, {{ target_y }}),
-        tolerance_px={{ tolerance_px }})
+@<primitives/setup_preamble.j2>
+@<primitives/pattern_capture.j2>
+@<primitives/assert_centroid.j2>
 ```
 
-Missing variable → render fails loudly. Shared fragments via `@<path>`.
+Kit ships with 4: `setup_preamble`, `pattern_capture`, `assert_centroid`, `assert_intensity`.
+sc-compose merges required variables across the include graph automatically.
 
 ---
 
-## Layer 3 — `/hitl-test` skill
+## Layer 3 — `/hitl-test` (the day-to-day path)
 
 ```
 Engineer: /hitl-test
@@ -152,7 +154,20 @@ One `AskUserQuestion` per variable. Engineer never sees Python.
 
 ---
 
-## Data flow
+## Layer 4 — `/hitl-author` (the new-shape path)
+
+**The architectural reason there are two skills, not just two prompts:**
+
+- `/hitl-test` only varies **values** of an existing template.
+- `/hitl-author` is the only way to vary **the test's structure** — which checks run, in what order, against what capture.
+
+Engineer picks primitives like building blocks; skill writes a new `templates/<name>.py.j2` with an authoring-trail comment block recording intent + chosen primitives + date. Developer reviews + merges before the new shape becomes available via `/hitl-test`.
+
+If no primitive combination fits: skill refuses to approximate, writes a structured request to `issues/primitive-requests/` instead.
+
+---
+
+## Data flow — `/hitl-test`
 
 ```mermaid
 sequenceDiagram
@@ -197,12 +212,13 @@ The engineer can **feel** the variable through the failure message.
 ## To take this to your domain
 
 1. Replace `hitl_lib/` with your hardware mocks + assertion helpers.
-2. Write 3–5 templates covering your real test shapes.
-3. Tune `SKILL.md` with your variables' defaults.
+2. Write a handful of **primitives** for your operational concepts (e.g. `roi_select`, `fgr_trigger`, `pixel_variance_check`).
+3. Build a few **templates** composing those primitives.
+4. Tune both `SKILL.md` files with your variables' defaults.
 
-The discovery, AskUserQuestion loop, and render-run flow are portable.
+The discovery, the AskUserQuestion loop, the render-run flow, the authoring trail, the request file — all portable.
 
-**What you keep:** a typed contract, a place it's reviewed, and a failure mode that fires before runtime.
+**What you keep:** a typed contract, a kit of reviewed building blocks the agent can compose but not bypass, a place each contract is reviewed, and a failure mode that fires before runtime.
 
 ---
 
@@ -210,4 +226,7 @@ The discovery, AskUserQuestion loop, and render-run flow are portable.
 
 - Repo: this directory
 - Full version: `docs/sop.md`
-- Run it yourself: `make demo` then `/hitl-test` in Claude Code
+- Run it yourself:
+  - `make demo` (hand-rendered, no agent)
+  - `/hitl-test` in Claude Code (consume an existing shape)
+  - `/hitl-author` in Claude Code (design a new shape)
