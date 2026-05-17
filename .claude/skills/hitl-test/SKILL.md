@@ -76,12 +76,14 @@ These hints help you offer the right Recommended option, but the engineer can
 always pick "Other" and type anything:
 
 - `test_name` — snake_case the answer
-- `display_pattern` — `dot_grid` (default), `checkerboard`, `single_dot`, `horizontal_lines`
+- `display_pattern` — `dot_grid` (default), `checkerboard`, `single_dot`, `horizontal_lines`, `fgr` (flat gray raster, for uniformity tests)
 - `target_x`, `target_y` — `100` (image center; image is 200×200)
 - `tolerance_px` — `5` (passes with default `dot_grid` jitter); `1` to demonstrate failure
 - `assertion_kinds` — `centroid_within`, `pixel_intensity_above`
 - `assertion_kwargs` — e.g. `target=(100, 100), tolerance_px=5`, `threshold=100`
 - `intensity_threshold` — `100` (typical sanity check that the display rendered something visible)
+- `grid_rows`, `grid_cols` — `3` and `3` (a 3×3 ROI grid for FGR uniformity; image is 200×200)
+- `max_deviation_pct` — `5` (passes with the default FGR field's ~3.6% deviation); `2` to demonstrate failure
 
 ## Step 3 — render
 

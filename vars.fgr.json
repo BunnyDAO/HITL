@@ -1,0 +1,7 @@
+{
+  "test_name": "fgr_uniformity_demo",
+  "display_pattern": "fgr",
+  "grid_rows": 3,
+  "grid_cols": 3,
+  "max_deviation_pct": 5
+}

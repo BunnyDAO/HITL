@@ -1,0 +1,7 @@
+---
+required_variables:
+  - max_deviation_pct
+metadata:
+  purpose: "Assert cross-ROI luminance uniformity within tolerance — one hitl_assert.roi_uniformity_within call. Must come after tile_rois (uses the `rois` it binds)."
+---
+    hitl_assert.roi_uniformity_within(image, rois, max_deviation_pct={{ max_deviation_pct }})

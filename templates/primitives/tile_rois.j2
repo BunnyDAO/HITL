@@ -1,0 +1,8 @@
+---
+required_variables:
+  - grid_rows
+  - grid_cols
+metadata:
+  purpose: "Tile the captured image into a grid_rows x grid_cols grid of ROIs. Must come after pattern_capture (uses the `image` it binds); binds `rois` for a downstream ROI assertion."
+---
+    rois = roi.tile(image, rows={{ grid_rows }}, cols={{ grid_cols }})

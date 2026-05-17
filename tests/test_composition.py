@@ -22,6 +22,8 @@ COMPOSED_TEMPLATES: list[tuple[str, str]] = [
     ("templates/smoke-test.py.j2", "vars.smoke.json"),
     # Engineer-authored example, produced by simulating /hitl-author end-to-end.
     ("templates/centroid-with-intensity.py.j2", "vars.centroid-with-intensity.json"),
+    # FGR cross-ROI uniformity — the display-metrology domain example.
+    ("templates/fgr-uniformity.py.j2", "vars.fgr.json"),
 ]
 
 

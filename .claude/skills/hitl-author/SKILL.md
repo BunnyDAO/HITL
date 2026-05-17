@@ -70,10 +70,12 @@ variable — same UX as `/hitl-test`'s Step 2 (see `.claude/skills/hitl-test/SKI
 Hints for the kit's known variables (mirror `/hitl-test`):
 
 - `test_name` — already collected in Step 1; do not re-ask
-- `display_pattern` — recommend `dot_grid`; offer `checkerboard`, `single_dot`, `horizontal_lines`
+- `display_pattern` — recommend `dot_grid`; offer `checkerboard`, `single_dot`, `horizontal_lines`, `fgr` (flat gray raster, for uniformity)
 - `target_x`, `target_y` — recommend `100`
 - `tolerance_px` — recommend `5`
 - `intensity_threshold` — recommend `100`
+- `grid_rows`, `grid_cols` — recommend `3` and `3` (the ROI grid for FGR uniformity)
+- `max_deviation_pct` — recommend `5` (passes the default FGR field); `2` demonstrates failure
 
 ## Step 5 — author the template
 
@@ -81,7 +83,8 @@ Sort the picked primitives into conventional order:
 
 1. `setup_preamble` (always first if picked — emits imports + def line)
 2. `pattern_capture` (after setup, before any assertion)
-3. `assert_centroid`, `assert_intensity`, ... (assertions in pick order)
+3. `tile_rois` (after capture, before an ROI assertion — binds `rois`)
+4. `assert_centroid`, `assert_intensity`, `assert_roi_uniformity`, ... (assertions in pick order; `assert_roi_uniformity` needs `tile_rois` first)
 
 Write `templates/<test_name>.py.j2` with this structure:
 

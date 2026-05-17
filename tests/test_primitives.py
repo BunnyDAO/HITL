@@ -42,6 +42,16 @@ PRIMITIVES: list[tuple[str, dict, str]] = [
         {"intensity_threshold": 100},
         "hitl_assert.pixel_intensity_above(image, threshold=100)",
     ),
+    (
+        "tile_rois",
+        {"grid_rows": 3, "grid_cols": 3},
+        "rois = roi.tile(image, rows=3, cols=3)",
+    ),
+    (
+        "assert_roi_uniformity",
+        {"max_deviation_pct": 5},
+        "hitl_assert.roi_uniformity_within(image, rois, max_deviation_pct=5)",
+    ),
 ]
 
 

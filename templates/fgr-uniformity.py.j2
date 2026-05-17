@@ -1,0 +1,17 @@
+---
+required_variables:
+  - test_name
+  - display_pattern
+  - grid_rows
+  - grid_cols
+  - max_deviation_pct
+defaults:
+  capture_delay_ms: 500
+  retries: 3
+metadata:
+  purpose: "FGR cross-ROI uniformity test — show a flat gray raster, capture it, tile into a grid of ROIs, assert (max-min)/max luminance deviation is within tolerance. The canonical display-metrology domain example. Composes from the kit: setup_preamble + pattern_capture + tile_rois + assert_roi_uniformity."
+---
+@<primitives/setup_preamble.j2>
+@<primitives/pattern_capture.j2>
+@<primitives/tile_rois.j2>
+@<primitives/assert_roi_uniformity.j2>

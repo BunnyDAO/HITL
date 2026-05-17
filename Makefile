@@ -1,4 +1,4 @@
-.PHONY: demo demo-multi clean test
+.PHONY: demo demo-multi demo-smoke demo-authored demo-fgr clean test
 
 # Render vision-centroid into tests/generated/test_demo.py and run pytest on it.
 # This is the "hand-rendered" demo flow — no agent skill involved.
@@ -36,6 +36,15 @@ demo-authored:
 		--var-file vars.centroid-with-intensity.json \
 		--output tests/generated/test_authored.py
 	.venv/bin/pytest tests/generated/test_authored.py -v
+
+# Render the FGR cross-ROI uniformity template (the display-metrology domain example).
+demo-fgr:
+	mkdir -p tests/generated
+	sc-compose render --mode file \
+		--file templates/fgr-uniformity.py.j2 \
+		--var-file vars.fgr.json \
+		--output tests/generated/test_fgr.py
+	.venv/bin/pytest tests/generated/test_fgr.py -v
 
 # Wipe generated tests.
 clean:
